@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Fiche de tir · ANV Ballistics Premium</title>
+<style>
+:root{--bg:#f4f0e8;--fg:#1b1a17;--mut:#6b655b;--line:#d8d0c3;--acc:#c4621b;--card:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#141210;--fg:#f1ede4;--mut:#a39a8c;--line:#3a352e;--acc:#e07a2e;--card:#1d1a17}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px}
+.k{color:var(--acc);font-weight:700;letter-spacing:.22em;font-size:12px}
+h1{font-size:22px;margin:4px 0 6px}
+.m{color:var(--mut);font-size:14px;margin:2px 0}
+table{width:100%;border-collapse:collapse;margin-top:14px;background:var(--card);border-radius:12px;overflow:hidden}
+th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:8px 4px;border-bottom:2px solid var(--line)}
+td{text-align:center;padding:10px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.d{font-weight:700;font-size:20px}td.d small{display:block;font-weight:400;color:var(--mut);font-size:12px}
+td.v{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}td.v small{display:block;font-size:12px;font-weight:400;color:var(--mut)}
+tr.on td{background:rgba(224,122,46,.2)}
+.n{font-size:13px;color:var(--mut);margin-top:12px}
+button{font:inherit;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+@media print{button{display:none}body{background:#fff;color:#000}table{background:#fff}}
+</style></head>
+<body><main id="m"></main>
+<script>
+/* Page de lecture d'une fiche de tir envoyée par QR code depuis ANV Ballistics Premium.
+   Les données sont après le « # » du lien (base64url) : le navigateur ne les envoie jamais au serveur. */
+(function(){
+  var T={
+    fr:{title:"Fiche de tir",d:"Distance",e:"Hausse",w:"Dérive",note:"Clics comptés depuis le zéro de l'arme · clic {c}. Les flèches indiquent le sens où tourner la tourelle. Touchez une ligne pour la surligner.",est:"Estimation calculée avec ANV Ballistics Premium pour les conditions indiquées : confirmez toujours au tir.",print:"Imprimer",err:"Fiche illisible",errN:"Le lien est incomplet. Demandez à l'expéditeur d'afficher à nouveau le QR code dans ANV Ballistics Premium."},
+    en:{title:"Dope card",d:"Range",e:"Elevation",w:"Windage",note:"Clicks counted from the rifle's zero · {c} click. Arrows show which way to turn the turret. Tap a row to highlight it.",est:"Estimate calculated with ANV Ballistics Premium for the conditions shown: always confirm on the range.",print:"Print",err:"Card cannot be read",errN:"The link is incomplete. Ask the sender to show the QR code again in ANV Ballistics Premium."},
+    es:{title:"Ficha de tiro",d:"Distancia",e:"Elevación",w:"Deriva",note:"Clics contados desde el cero del arma · clic {c}. Las flechas indican hacia dónde girar la torreta. Toque una fila para resaltarla.",est:"Estimación calculada con ANV Ballistics Premium para las condiciones indicadas: confírmela siempre en el campo de tiro.",print:"Imprimir",err:"Ficha ilegible",errN:"El enlace está incompleto. Pida al remitente que vuelva a mostrar el código QR en ANV Ballistics Premium."}};
+  var m=document.getElementById("m"),p=null;
+  try{var h=location.hash.slice(1),b=atob(h.replace(/-/g,"+").replace(/_/g,"/")),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
+    p=new TextDecoder().decode(u).split("~");if(p[0]!=="A1"||p.length<13)p=null}catch(e){p=null}
+  var nl=(navigator.language||"en").slice(0,2),lg=p&&T[p[1]]?p[1]:(T[nl]?nl:"en"),t=T[lg];document.documentElement.lang=lg;
+  var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+  if(!p){m.innerHTML='<div class="k">ANV BALLISTICS PREMIUM</div><h1>'+t.err+'</h1><p class="m">'+t.errN+'</p>';return}
+  var stand=p[2],rifle=p[3],bullet=p[4],bal=p[5],setup=p[6],wx=p[7],clk=p[8],du=p[9],un=p[10]==="1"?"MRAD":"MOA",cv=+p[11]||0.1;
+  var nb=function(x){return String(Math.round(x*100)/100).replace(".",lg==="en"?".":",")};
+  var rows=(p[12]||"").split("!").filter(Boolean).map(function(s){var a=s.split(",");return{x:a[0],e:+a[1]||0,w:+a[2]||0,l:a[3]||""}});
+  document.title=t.title+" · "+(rifle||bal);
+  var cell=function(n,up,dn){return(n?(n>0?up:dn)+" "+Math.abs(n):"0")+"<small>"+nb(Math.abs(n)*cv)+" "+un+"</small>"};
+  m.innerHTML='<div class="k">ANV BALLISTICS PREMIUM</div><h1>'+t.title+'</h1>'+(stand?'<p class="m">📍 '+esc(stand)+'</p>':'')+
+    '<p style="margin:6px 0 2px"><b>'+esc([rifle,bullet].filter(Boolean).join(" · ")||bal)+'</b></p><p class="m">'+esc(bal)+'</p><p class="m">'+esc(setup)+'</p><p class="m">'+esc(wx)+'</p>'+
+    '<table><tr><th>'+t.d+'</th><th>'+t.e+'</th><th>'+t.w+'</th></tr>'+rows.map(function(r){return'<tr><td class="d">'+esc(r.x)+' '+esc(du)+(r.l?'<small>'+esc(r.l)+'</small>':'')+'</td><td class="v">'+cell(r.e,"↑","↓")+'</td><td class="v">'+cell(r.w,"←","→")+'</td></tr>'}).join("")+'</table>'+
+    '<p class="n">'+t.note.replace("{c}",esc(clk))+'</p><p class="n">'+t.est+'</p><p><button type="button" onclick="print()">⎙ '+t.print+'</button></p>';
+  var trs=m.querySelectorAll("tr");for(var j=1;j<trs.length;j++)trs[j].onclick=function(){var on=m.querySelector("tr.on");if(on)on.classList.remove("on");if(on!==this)this.classList.add("on")};
+})();
+</script>
+</body></html>
